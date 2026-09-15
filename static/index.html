@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HAM-FH — ألعاب ثنائية</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, Tahoma, sans-serif;
+    background: #0f1220; color: #e8ebf5;
+    min-height: 100dvh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .card { width: 100%; max-width: 420px; text-align: center; }
+  h1 { font-size: 1.8rem; margin-bottom: 6px; }
+  p { color: #8b90a8; margin-bottom: 28px; font-size: .9rem; }
+  .games {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+  a.game {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 22px 12px;
+    background: #1a1e35; border-radius: 14px;
+    color: #e8ebf5; text-decoration: none;
+    font-weight: 700; font-size: 1rem;
+    transition: .15s;
+    border: 2px solid transparent;
+  }
+  a.game:hover { border-color: #6c5ce7; transform: translateY(-2px); }
+  a.game .icon { font-size: 1.8rem; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎮 HAM-FH</h1>
+    <p>اختر لعبة للبدء</p>
+    <div class="games">
+      <a class="game" href="/games/xo/">
+        <span class="icon">❌</span>
+        <span>XO</span>
+      </a>
+      <!-- أضف ألعابًا جديدة هنا -->
+    </div>
+  </div>
+</body>
+</html>

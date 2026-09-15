@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>XO — HAM-FH</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #131a2e;
+    --surface2: #1c2541;
+    --accent: #7c3aed;
+    --accent-glow: rgba(124, 58, 237, 0.4);
+    --x-color: #00d4ff;
+    --o-color: #ff6b9d;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --success: #10b981;
+    --border: rgba(255,255,255,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .screen { width: 100%; max-width: 420px; }
+  [hidden] { display: none !important; }
+
+  /* ---- شاشة الدخول ---- */
+  #entry {
+    text-align: center;
+    padding: 32px 0;
+  }
+
+  #entry .logo {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: 6px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--x-color), var(--accent), var(--o-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  #entry .sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 32px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn:active { transform: scale(0.97); }
+
+  .btn.primary {
+    background: linear-gradient(135deg, var(--accent), #9333ea);
+    color: white;
+    box-shadow: 0 4px 24px var(--accent-glow);
+  }
+  .btn.secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .divider {
+    color: var(--muted);
+    margin: 20px 0;
+    font-size: 0.85rem;
+    position: relative;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: calc(50% - 30px);
+    height: 1px;
+    background: var(--border);
+  }
+  .divider::before { left: 0; }
+  .divider::after { right: 0; }
+
+  #joinForm { display: flex; gap: 10px; }
+  #codeInput {
+    flex: 1;
+    padding: 15px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1.1rem;
+    text-align: center;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  #codeInput:focus { outline: none; border-color: var(--accent); }
+  #joinForm .btn { width: auto; padding: 0 24px; }
+
+  /* ---- شاشة اللعب ---- */
+  header.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .room-label { font-size: 0.85rem; color: var(--muted); }
+  .room strong {
+    color: var(--accent);
+    font-size: 1.3rem;
+    letter-spacing: 3px;
+    font-weight: 800;
+    margin-right: 6px;
+  }
+  .icon-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .icon-btn:hover { background: var(--surface2); }
+
+  /* ---- اللاعبين ---- */
+  .players {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .player {
+    background: var(--surface);
+    padding: 14px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    border: 2px solid transparent;
+    transition: border-color 0.3s;
+  }
+  .player .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #334155;
+    transition: background 0.3s, box-shadow 0.3s;
+    flex-shrink: 0;
+  }
+  .player.online .dot { background: var(--success); box-shadow: 0 0 10px var(--success); }
+  .player.active { border-color: var(--accent); }
+  .player[data-sym="X"] .label { color: var(--x-color); }
+  .player[data-sym="O"] .label { color: var(--o-color); }
+
+  .status {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 16px;
+    min-height: 26px;
+    font-size: 0.95rem;
+  }
+  .status.win { color: var(--success); font-weight: 700; font-size: 1.1rem; }
+
+  /* ---- اللوحة ---- */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    aspect-ratio: 1;
+    margin-bottom: 18px;
+  }
+  .cell {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 18px;
+    font-size: clamp(2rem, 14vw, 3.4rem);
+    font-weight: 800;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cell:active:not(:disabled) { transform: scale(0.94); }
+  .cell.X { color: var(--x-color); text-shadow: 0 0 20px rgba(0,212,255,0.5); }
+  .cell.O { color: var(--o-color); text-shadow: 0 0 20px rgba(255,107,157,0.5); }
+  .cell:disabled { cursor: default; }
+  .cell.win {
+    background: rgba(16,185,129,0.12);
+    border-color: var(--success);
+    box-shadow: inset 0 0 0 2px var(--success);
+  }
+
+  /* ---- زر إعادة اللعب ---- */
+  #resetBtn { width: 100%; }
+</style>
+</head>
+<body>
+
+<!-- ===== شاشة الدخول ===== -->
+<section id="entry" class="screen">
+  <div class="logo">XO</div>
+  <p class="sub">العب مع صديق من أي مكان</p>
+
+  <button id="createBtn" class="btn primary">إنشاء غرفة جديدة</button>
+
+  <div class="divider">أو</div>
+
+  <form id="joinForm">
+    <input id="codeInput" placeholder="رمز الغرفة" maxlength="6" autocomplete="off">
+    <button type="submit" class="btn secondary">دخول</button>
+  </form>
+</section>
+
+<!-- ===== شاشة اللعب ===== -->
+<section id="game" class="screen" hidden>
+  <header class="topbar">
+    <div>
+      <div class="room-label">الغرفة</div>
+      <div><strong id="roomCode">----</strong></div>
+    </div>
+    <button id="copyBtn" class="icon-btn" title="نسخ الرابط">📋</button>
+  </header>
+
+  <div class="players">
+    <div class="player" id="playerX" data-sym="X">
+      <span class="dot"></span><span class="label">لاعب X</span>
+    </div>
+    <div class="player" id="playerO" data-sym="O">
+      <span class="dot"></span><span class="label">لاعب O</span>
+    </div>
+  </div>
+
+  <div class="status" id="statusText">جارٍ الاتصال...</div>
+
+  <div class="board" id="board"></div>
+
+  <button id="resetBtn" class="btn primary" hidden>لعبة جديدة</button>
+</section>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const LINES = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+
+  let pid = sessionStorage.getItem("pid");
+  if (!pid) {
+    pid = Math.random().toString(36).slice(2, 10);
+    sessionStorage.setItem("pid", pid);
+  }
+
+  const entryEl   = $("#entry");
+  const gameEl    = $("#game");
+  const createBtn = $("#createBtn");
+  const joinForm  = $("#joinForm");
+  const codeInput = $("#codeInput");
+  const roomCodeEl= $("#roomCode");
+  const copyBtn   = $("#copyBtn");
+  const statusEl  = $("#statusText");
+  const boardEl   = $("#board");
+  const resetBtn  = $("#resetBtn");
+  const playerX   = $("#playerX");
+  const playerO   = $("#playerO");
+
+  function genCode(n = 4) {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let s = "";
+    for (let i = 0; i < n; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    return s;
+  }
+
+  const params = new URLSearchParams(location.search);
+  const room = (params.get("room") || "").toUpperCase();
+
+  if (!room) {
+    createBtn.addEventListener("click", () => {
+      location.href = "?room=" + genCode(4);
+    });
+    joinForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const c = codeInput.value.trim().toUpperCase();
+      if (c) location.href = "?room=" + c;
+    });
+    return;
+  }
+
+  entryEl.hidden = true;
+  gameEl.hidden = false;
+  roomCodeEl.textContent = room;
+
+  const cells = [];
+  for (let i = 0; i < 9; i++) {
+    const b = document.createElement("button");
+    b.className = "cell";
+    b.addEventListener("click", () => send({ type: "move", index: i }));
+    boardEl.appendChild(b);
+    cells.push(b);
+  }
+
+  copyBtn.addEventListener("click", async () => {
+    const url = location.origin + location.pathname + "?room=" + room;
+    try {
+      await navigator.clipboard.writeText(url);
+      copyBtn.textContent = "\u2713";
+      setTimeout(() => (copyBtn.textContent = "\uD83D\uDCCB"), 1200);
+    } catch {
+      prompt("انسخ الرابط وأرسله لصديقك:", url);
+    }
+  });
+
+  resetBtn.addEventListener("click", () => send({ type: "reset" }));
+
+  let ws = null;
+  let mySymbol = null;
+  let retry = null;
+
+  function connect() {
+    const proto = location.protocol === "https:" ? "wss:" : "ws:";
+    ws = new WebSocket(
+      `${proto}//${location.host}/ws/xo/${room}?pid=${encodeURIComponent(pid)}`
+    );
+    ws.addEventListener("open", () => setStatus("متصل — بانتظار اللاعب الآخر..."));
+    ws.addEventListener("message", (ev) => {
+      let msg;
+      try { msg = JSON.parse(ev.data); } catch { return; }
+      if (msg.type === "state") render(msg);
+      else if (msg.type === "error") setStatus(msg.message);
+    });
+    ws.addEventListener("close", () => {
+      setStatus("انقطع الاتصال — إعادة المحاولة...");
+      clearTimeout(retry);
+      retry = setTimeout(connect, 1500);
+    });
+  }
+
+  function send(obj) {
+    if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj));
+  }
+
+  function render(s) {
+    mySymbol = s.yourSymbol;
+
+    for (let i = 0; i < 9; i++) {
+      const v = s.board[i];
+      const c = cells[i];
+      c.textContent = v || "";
+      c.classList.toggle("X", v === "X");
+      c.classList.toggle("O", v === "O");
+      c.classList.remove("win");
+      c.disabled = !!v || s.status !== "playing" || s.turn !== mySymbol;
+    }
+
+    playerX.classList.toggle("online", !!s.connected.X);
+    playerO.classList.toggle("online", !!s.connected.O);
+    playerX.classList.toggle("active", s.status === "playing" && s.turn === "X");
+    playerO.classList.toggle("active", s.status === "playing" && s.turn === "O");
+
+    statusEl.classList.remove("win");
+    resetBtn.hidden = true;
+
+    if (s.status === "waiting") {
+      setStatus("بانتظار اللاعب الآخر... شارك الرابط");
+    } else if (s.status === "playing") {
+      setStatus(s.turn === mySymbol ? "دورك الآن" : "دور الخصم...");
+    } else if (s.status === "finished") {
+      if (s.winner === "draw")      setStatus("تعادل");
+      else if (s.winner === mySymbol) setStatus("فزت!");
+      else                            setStatus("خسرت");
+      statusEl.classList.add("win");
+      resetBtn.hidden = false;
+      highlightWin(s.board, s.winner);
+    }
+  }
+
+  function highlightWin(board, winner) {
+    if (!winner || winner === "draw") return;
+    for (const [a, b, c] of LINES) {
+      if (board[a] === winner && board[b] === winner && board[c] === winner) {
+        cells[a].classList.add("win");
+        cells[b].classList.add("win");
+        cells[c].classList.add("win");
+        break;
+      }
+    }
+  }
+
+  function setStatus(t) { statusEl.textContent = t; }
+
+  connect();
+})();
+</script>
+</body>
+</html>
