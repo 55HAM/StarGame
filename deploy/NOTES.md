@@ -35,3 +35,10 @@ Render سيغيّر النطاق تلقائيًا.
 1. افتح المستودع على GitHub واقرأ `readme.txt` و `deploy/NOTES.md`.
 2. ادخل Render، تحقق من آخر نشر ناجح.
 3. أي تعديل جديد: اتبع خطوات git أعلاه.
+
+
+
+cd "/storage/emulated/0/HAM/Projects/# online/HAM-FH"
+pkg install git -y
+git config --global user.name "اسمك"
+git config --global user.email "بريدك@example.com"
